@@ -2,7 +2,7 @@
 
 A modern, single-page web application that replicates the UI and functionality of Quizlet.com with additional innovative features. Built using only vanilla HTML, CSS, and JavaScript.
 
-![Quizlet Clone Preview]([https://via.placeholder.com/800x400/4255ff/ffffff?text=Quizlet+Clone+Preview](https://quizlet-clone-umber.vercel.app/))
+![Quizlet Clone Preview](https://quizlet-clone-umber.vercel.app/))
 
 ## Features
 
