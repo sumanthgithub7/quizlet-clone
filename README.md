@@ -2,7 +2,7 @@
 
 A modern, single-page web application that replicates the UI and functionality of Quizlet.com with additional innovative features. Built using only vanilla HTML, CSS, and JavaScript.
 
-![Quizlet Clone Preview](https://quizlet-clone-umber.vercel.app/))
+
 
 ## Features
 
@@ -101,6 +101,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
 
 Project Link: [https://github.com/yourusername/quizlet-clone](https://github.com/yourusername/quizlet-clone) 
