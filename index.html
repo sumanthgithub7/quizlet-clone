@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizlet Clone</title>
+    <style>
+        :root {
+            --primary-color: #4255ff;
+            --secondary-color: #f6f7fb;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --gradient-start: #4255ff;
+            --gradient-end: #6c5ce7;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #ffffff 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='24px' height='24px'%3E%3Cpath d='M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z'/%3E%3C/svg%3E");
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flashcard Grid */
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .flashcard {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            perspective: 1000px;
+            height: 250px;
+        }
+
+        .flashcard:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 1.2rem;
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        /* AI Generator Section */
+        .ai-generator {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .ai-generator textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .ai-generator textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .ai-generator button {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .ai-generator button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Voice Quiz Mode */
+        .voice-quiz {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .voice-quiz-toggle {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Study Planner */
+        .study-planner {
+            margin-top: 2rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .planner-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .planner-column {
+            background: var(--secondary-color);
+            padding: 1rem;
+            border-radius: 8px;
+            min-height: 200px;
+            transition: background-color 0.3s ease;
+        }
+
+        .planner-column:hover {
+            background: #e8eaf6;
+        }
+
+        .planner-column h3 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .planner-flashcard {
+            background: white;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            cursor: move;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .planner-flashcard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .planner-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .flashcard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">Quizlet Clone</div>
+        <nav class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#ai-generator">AI Generator</a>
+            <a href="#voice-quiz">Voice Quiz</a>
+            <a href="#study-planner">Study Planner</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section id="home">
+            <h1>Welcome to Quizlet Clone</h1>
+            
+            <div class="flashcard-grid">
+                <article class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            What is the capital of France?
+                        </div>
+                        <div class="flashcard-back">
+                            Paris
+                        </div>
+                    </div>
+                </article>
+                <article class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            What is 2 + 2?
+                        </div>
+                        <div class="flashcard-back">
+                            4
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="ai-generator" class="ai-generator">
+            <h2>AI Flashcard Generator</h2>
+            <textarea placeholder="Paste your text here to generate flashcards..."></textarea>
+            <button onclick="generateFlashcards()">Generate Flashcards</button>
+            <div id="generated-flashcards" class="flashcard-grid"></div>
+        </section>
+
+        <section id="voice-quiz" class="voice-quiz">
+            <h2>Voice Quiz Mode</h2>
+            <div class="voice-quiz-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="voice-quiz-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span>Enable Voice Quiz Mode</span>
+            </div>
+            <article id="voice-quiz-flashcard" class="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        Click to start voice quiz
+                    </div>
+                    <div class="flashcard-back">
+                        Answer will be revealed here
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section id="study-planner" class="study-planner">
+            <h2>Study Planner</h2>
+            <div class="planner-grid">
+                <div class="planner-column">
+                    <h3>Monday</h3>
+                </div>
+                <div class="planner-column">
+                    <h3>Tuesday</h3>
+                </div>
+                <div class="planner-column">
+                    <h3>Wednesday</h3>
+                </div>
+                <div class="planner-column">
+                    <h3>Thursday</h3>
+                </div>
+                <div class="planner-column">
+                    <h3>Friday</h3>
+                </div>
+                <div class="planner-column">
+                    <h3>Saturday</h3>
+                </div>
+                <div class="planner-column">
+                    <h3>Sunday</h3>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Quizlet Clone. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Flashcard flip functionality
+        document.querySelectorAll('.flashcard').forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('flipped');
+            });
+        });
+
+        // AI Flashcard Generator
+        function generateFlashcards() {
+            const textarea = document.querySelector('.ai-generator textarea');
+            const text = textarea.value.trim();
+            if (!text) return;
+
+            const button = document.querySelector('.ai-generator button');
+            const originalText = button.textContent;
+            button.innerHTML = '<span class="loading"></span> Generating...';
+
+            // Simulate AI processing delay
+            setTimeout(() => {
+                // Mock AI generation - in reality this would use NLP
+                const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                const generatedCards = document.getElementById('generated-flashcards');
+                generatedCards.innerHTML = '';
+
+                // Generate 3-5 flashcards
+                const numCards = Math.min(Math.max(3, Math.floor(sentences.length / 2)), 5);
+                for (let i = 0; i < numCards; i++) {
+                    const sentence = sentences[i];
+                    const words = sentence.split(' ');
+                    const question = words.slice(0, -2).join(' ') + '?';
+                    const answer = words.slice(-2).join(' ');
+
+                    const card = document.createElement('article');
+                    card.className = 'flashcard';
+                    card.innerHTML = `
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">${question}</div>
+                            <div class="flashcard-back">${answer}</div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        card.classList.toggle('flipped');
+                    });
+                    generatedCards.appendChild(card);
+                }
+
+                button.textContent = originalText;
+            }, 1500);
+        }
+
+        // Voice Quiz Mode
+        const voiceQuizToggle = document.getElementById('voice-quiz-toggle');
+        const voiceQuizCard = document.getElementById('voice-quiz-flashcard');
+        let synth = window.speechSynthesis;
+        let currentQuestion = 0;
+        const questions = [
+            { q: "What is the capital of France?", a: "Paris" },
+            { q: "What is 2 + 2?", a: "4" },
+            { q: "What is the largest planet in our solar system?", a: "Jupiter" }
+        ];
+
+        voiceQuizToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                startVoiceQuiz();
+            } else {
+                stopVoiceQuiz();
+            }
+        });
+
+        function startVoiceQuiz() {
+            currentQuestion = 0;
+            askQuestion();
+        }
+
+        function stopVoiceQuiz() {
+            synth.cancel();
+            voiceQuizCard.querySelector('.flashcard-front').textContent = "Click to start voice quiz";
+            voiceQuizCard.querySelector('.flashcard-back').textContent = "Answer will be revealed here";
+            voiceQuizCard.classList.remove('flipped');
+        }
+
+        function askQuestion() {
+            if (currentQuestion >= questions.length) {
+                currentQuestion = 0;
+            }
+            
+            const question = questions[currentQuestion];
+            voiceQuizCard.querySelector('.flashcard-front').textContent = question.q;
+            voiceQuizCard.querySelector('.flashcard-back').textContent = question.a;
+            voiceQuizCard.classList.remove('flipped');
+
+            const utterance = new SpeechSynthesisUtterance(question.q);
+            synth.speak(utterance);
+
+            voiceQuizCard.addEventListener('click', revealAnswer);
+        }
+
+        function revealAnswer() {
+            voiceQuizCard.classList.add('flipped');
+            const answer = questions[currentQuestion].a;
+            const utterance = new SpeechSynthesisUtterance(`The answer is ${answer}`);
+            synth.speak(utterance);
+            
+            setTimeout(() => {
+                currentQuestion++;
+                askQuestion();
+            }, 3000);
+        }
+
+        // Study Planner Drag and Drop
+        document.querySelectorAll('.planner-column').forEach(column => {
+            column.addEventListener('dragover', e => {
+                e.preventDefault();
+                column.style.background = '#e8eaf6';
+            });
+
+            column.addEventListener('dragleave', e => {
+                column.style.background = 'var(--secondary-color)';
+            });
+
+            column.addEventListener('drop', e => {
+                e.preventDefault();
+                column.style.background = 'var(--secondary-color)';
+                const flashcard = document.querySelector('.flashcard.dragging');
+                if (flashcard) {
+                    const plannerCard = document.createElement('div');
+                    plannerCard.className = 'planner-flashcard';
+                    plannerCard.textContent = flashcard.querySelector('.flashcard-front').textContent;
+                    column.appendChild(plannerCard);
+                }
+            });
+        });
+
+        document.querySelectorAll('.flashcard').forEach(card => {
+            card.setAttribute('draggable', true);
+            card.addEventListener('dragstart', () => {
+                card.classList.add('dragging');
+            });
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+            });
+        });
+    </script>
+</body>
+</html> 
